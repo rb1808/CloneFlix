@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RitFlix</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #141414;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 20px 50px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            transition: background 0.3s;
+        }
+
+        .navbar.scrolled {
+            background: #141414;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #e50914;
+            letter-spacing: -1px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            font-size: 14px;
+        }
+
+        .nav-links a {
+            color: #e5e5e5;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #b3b3b3;
+        }
+
+        .hero {
+            height: 80vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 0 50px;
+            background: linear-gradient(to right, rgba(0,0,0,0.9) 30%, transparent 100%), 
+                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><rect fill="%23222" width="1200" height="600"/><text x="50%" y="50%" font-size="60" fill="%23444" text-anchor="middle">FEATURED CONTENT</text></svg>');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .hero-content {
+            max-width: 500px;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .hero p {
+            font-size: 18px;
+            line-height: 1.4;
+            margin-bottom: 25px;
+            color: #e5e5e5;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .btn-play {
+            background: #fff;
+            color: #000;
+        }
+
+        .btn-play:hover {
+            background: rgba(255,255,255,0.8);
+        }
+
+        .btn-info {
+            background: rgba(109,109,110,0.7);
+            color: #fff;
+        }
+
+        .btn-info:hover {
+            background: rgba(109,109,110,0.5);
+        }
+
+        .content-section {
+            padding: 0 50px 40px;
+            margin-top: 20px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .content-row {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            scrollbar-width: thin;
+            scrollbar-color: #4a4a4a #141414;
+        }
+
+        .content-row::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .content-row::-webkit-scrollbar-track {
+            background: #141414;
+        }
+
+        .content-row::-webkit-scrollbar-thumb {
+            background: #4a4a4a;
+            border-radius: 4px;
+        }
+
+        .content-card {
+            min-width: 250px;
+            height: 140px;
+            background: #2a2a2a;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.3s, z-index 0s 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .content-card:hover {
+            transform: scale(1.1);
+            z-index: 10;
+            transition: transform 0.3s, z-index 0s;
+        }
+
+        .content-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .content-card::after {
+            content: attr(data-title);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 8px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .content-card:hover::after {
+            opacity: 1;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #181818;
+            border-radius: 8px;
+            max-width: 850px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #181818;
+            border: none;
+            color: #fff;
+            font-size: 28px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+
+        .modal-close:hover {
+            background: #282828;
+        }
+
+        .video-player {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+        }
+
+        .modal-info {
+            padding: 30px;
+        }
+
+        .modal-info h2 {
+            font-size: 32px;
+            margin-bottom: 15px;
+        }
+
+        .modal-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 14px;
+            color: #46d369;
+            margin-bottom: 15px;
+        }
+
+        .modal-description {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #e5e5e5;
+            margin-bottom: 20px;
+        }
+
+        .modal-details {
+            font-size: 14px;
+            color: #777;
+            line-height: 1.8;
+        }
+
+        .modal-details span {
+            color: #e5e5e5;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 15px 20px;
+            }
+
+            .hero {
+                height: 60vh;
+                padding: 0 20px;
+            }
+
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .content-section {
+                padding: 0 20px 30px;
+            }
+
+            .content-card {
+                min-width: 200px;
+                height: 112px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar" id="navbar">
+        <div class="logo">RitFlix</div>
+        <div class="nav-links">
+            <a href="#home">Home</a>
+            <a href="#series">TV Shows</a>
+            <a href="#movies">Movies</a>
+            <a href="#new">New & Popular</a>
+            <a href="#mylist">My List</a>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1>The Last Kingdom</h1>
+            <p>A warrior must defend his homeland against invading forces while navigating deadly political intrigue in this epic tale of courage and betrayal.</p>
+            <div class="hero-buttons">
+                <button class="btn btn-play" onclick="openModal('The Last Kingdom', 'Action, Drama, History', 'A warrior must defend his homeland against invading forces while navigating deadly political intrigue in this epic tale of courage and betrayal.')">▶ Play</button>
+                <button class="btn btn-info" onclick="openModal('The Last Kingdom', 'Action, Drama, History', 'A warrior must defend his homeland against invading forces while navigating deadly political intrigue in this epic tale of courage and betrayal.')">ⓘ More Info</button>
+            </div>
+        </div>
+    </header>
+
+    <section class="content-section">
+        <h2 class="section-title">Trending Now</h2>
+        <div class="content-row" id="trending"></div>
+    </section>
+
+    <section class="content-section">
+        <h2 class="section-title">Popular on StreamFlix</h2>
+        <div class="content-row" id="popular"></div>
+    </section>
+
+    <section class="content-section">
+        <h2 class="section-title">Action Thrillers</h2>
+        <div class="content-row" id="action"></div>
+    </section>
+
+    <section class="content-section">
+        <h2 class="section-title">Comedies</h2>
+        <div class="content-row" id="comedy"></div>
+    </section>
+
+    <section class="content-section">
+        <h2 class="section-title">Documentaries</h2>
+        <div class="content-row" id="documentaries"></div>
+    </section>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            <video class="video-player" id="videoPlayer" controls>
+                <source src="" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <div class="modal-info">
+                <h2 id="modalTitle">Title</h2>
+                <div class="modal-meta">
+                    <span>98% Match</span>
+                    <span>2024</span>
+                    <span>HD</span>
+                </div>
+                <p class="modal-description" id="modalDescription">Description goes here.</p>
+                <div class="modal-details">
+                    <p><strong>Genre:</strong> <span id="modalGenre">Genre</span></p>
+                    <p><strong>Cast:</strong> <span>Various talented actors</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const content = {
+            trending: ['Midnight Heist', 'Ocean\'s Edge', 'City Lights', 'Dark Matter', 'The Voyager', 'Red Dawn'],
+            popular: ['The Crown', 'Breaking Barriers', 'Lost in Time', 'Paradise Found', 'The Detective', 'Ghost Protocol'],
+            action: ['Extraction Point', 'Vendetta', 'The Assassin', 'Code Black', 'Rapid Fire', 'Strike Team'],
+            comedy: ['Laughing Out Loud', 'Office Chaos', 'The Proposal', 'Happy Times', 'Comedy Club', 'Funny Business'],
+            documentaries: ['Planet Earth II', 'Our Planet', 'Wild Life', 'Ocean Deep', 'The Universe', 'Human Nature']
+        };
+
+        const genres = {
+            trending: 'Action, Thriller',
+            popular: 'Drama, Mystery',
+            action: 'Action, Adventure',
+            comedy: 'Comedy, Romance',
+            documentaries: 'Documentary, Nature'
+        };
+
+        function createCard(title, category) {
+            const card = document.createElement('div');
+            card.className = 'content-card';
+            card.setAttribute('data-title', title);
+            
+            const colors = ['#e50914', '#564d4d', '#831010', '#221f1f', '#b20710', '#831010'];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            
+            card.innerHTML = `<svg width="250" height="140" xmlns="http://www.w3.org/2000/svg">
+                <rect width="250" height="140" fill="${randomColor}"/>
+                <text x="50%" y="50%" font-size="18" fill="white" text-anchor="middle" dy=".3em">${title}</text>
+            </svg>`;
+            
+            card.onclick = () => openModal(title, genres[category], `Experience the thrilling story of ${title}. An unforgettable journey awaits.`);
+            return card;
+        }
+
+        function populateContent() {
+            Object.keys(content).forEach(category => {
+                const container = document.getElementById(category);
+                content[category].forEach(title => {
+                    container.appendChild(createCard(title, category));
+                });
+            });
+        }
+
+        function openModal(title, genre, description) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalGenre').textContent = genre;
+            document.getElementById('modalDescription').textContent = description;
+            document.getElementById('modal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+            document.getElementById('videoPlayer').pause();
+            document.body.style.overflow = 'auto';
+        }
+
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target.id === 'modal') {
+                closeModal();
+            }
+        });
+
+        populateContent();
+    </script>
+</body>
+</html>
